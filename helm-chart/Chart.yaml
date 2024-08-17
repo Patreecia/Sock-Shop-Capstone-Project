@@ -1,0 +1,13 @@
+apiVersion: v1
+description: A Helm chart for Sock Shop
+name: helm-chart
+version: 0.3.0
+
+
+dependencies:
+  - name: ingress-nginx
+    version: 4.11.1
+    repository: https://kubernetes.github.io/ingress-nginx
+    namspace: nginx-ingress
+    create-namespace: true
+    

@@ -1,0 +1,54 @@
+name: 'Destroy Terraform'
+
+on:
+  workflow_dispatch:
+    inputs:
+      CONFIRM:
+        type: choice
+        description: Are you sure you want to destroy?
+        options:
+            - "yes"
+            - "no"
+        required: true
+
+
+jobs:
+  Destroy-Terraform:
+    name: 'Destroy-Terraform'
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.CONFIRM   == 'yes'}}
+
+    steps:
+    # Checkout the repository
+    - name: Checkout
+      uses: actions/checkout@v3
+
+
+    # configure AwS credentials
+    - name: Configure AWS  
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    # Install the latest version of Terraform 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      
+    # Initialize terraform including remote state, and download modules
+    - name: Terraform Init
+      run: terraform init
+
+    # validate terraform code
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    # Plan tf
+    - name: Terraform Plan
+      run: terraform plan -no-color
+
+      # On push to "master", build or change infrastructure only when there'sa change to tf files.
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve -no-color
